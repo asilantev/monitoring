@@ -1,4 +1,5 @@
 <?php
+require_once (__DIR__."/client.php");
 /**
  * Хост подключения к базе данных
  * @var string
@@ -20,6 +21,11 @@ define("DB_LOGIN", 'cluster_status_user');
  */
 define("DB_PASSWORD", '1111');
 /**
+ * Идентификатор debug-чата
+ * */
+define("DEBUG_CHAT_ID", '-1001401685231');
+
+/**
  * Параметры, которые необходимо отслеживать
  * @var array
  */
@@ -29,11 +35,6 @@ $params = array(
     "SLAVE_IO_RUNNING" => "Yes",
     "SLAVE_SQL_RUNNING" => "Yes",
 );
-/**
-  Массив ошибок, которые нашлись
- * @var array
- */
- $logErrors = array();
 /**
  * Функция подключения к базе данных
  */
@@ -46,6 +47,20 @@ function connect()
     } else
         return $mysqli;
 }
+
+/**
+ * функция получения из БД SHOW SLAVE STATUS и отслеживания искомых параметров
+ */
+function getFromDBSlaveStatus()
+{
+    $mysqli = connect();
+    $result = $mysqli->query("SHOW SLAVE STATUS;");
+    $arStatus = $result->fetch_assoc();
+    $result->close();
+    $mysqli->close();
+    getShowSlaveStatus($arStatus);
+}
+
 /**
  * Функция формирования сообщений об ошибках
  * @param array $logErrors выявленные ошибки
@@ -64,28 +79,8 @@ function createMessageErrors($logErrors, $logStatus, $params)
         //если поле было в ошибках - пропускаем
         if (!array_key_exists(strtoupper($keyLog), $logErrors))
             $returnMessage .= strtoupper($keyLog) . " : " . $valLog."\n";
-
+    //echo  $returnMessage;
     return $returnMessage;
-}
-
-/**
- * функция получения из БД SHOW SLAVE STATUS и отслеживания искомых параметров
- */
-
-function getFromDBSlaveStatus()
-{
-    global $logErrors, $params;
-    $mysqli = connect();
-    $result = $mysqli->query("SHOW SLAVE STATUS;");
-    $arStatus = $result->fetch_assoc();
-    $result->close();
-    $mysqli->close();
-    getShowSlaveStatus($arStatus);
-
-    if (is_array($logErrors)) {
-        echo createMessageErrors($logErrors, $arStatus, $params);
-        // Client::sendDebugMessage(createMessageErrors($logErrors, $arTestGetShowStatus, $params), '-1001401685231');
-    }
 }
 
 /**
@@ -94,7 +89,8 @@ function getFromDBSlaveStatus()
  */
 function getShowSlaveStatus($arGetShowStatus)
 {
-    global $logErrors, $params;
+    global $params;
+    $logErrors = array();
     foreach ($arGetShowStatus as $keyStatus => $valStatus) {
         if (array_key_exists(strtoupper($keyStatus), $params)) {
             if (!is_numeric($valStatus)) {
@@ -106,10 +102,12 @@ function getShowSlaveStatus($arGetShowStatus)
             }
         }
     }
-    if (is_array($logErrors)) {
+    if (count($logErrors) > 0) {
         echo createMessageErrors($logErrors, $arGetShowStatus, $params);
-        // Client::sendDebugMessage(createMessageErrors($logErrors, $arTestGetShowStatus, $params), '-1001401685231');
+        Client::sendDebugMessage(createMessageErrors($logErrors, $arGetShowStatus, $params), DEBUG_CHAT_ID);
     }
 }
+
+getFromDBSlaveStatus();
 
 

@@ -11,7 +11,7 @@ class Client
 	 * Токен для бота, который используется для доступа к боту
 	 * @var string
 	 */
-	const BOT_TOKEN = '603071950:AAGD8oMpgJTsvM_dzvwDQWzh4ImwMC5pRXM';
+	const BOT_TOKEN = '734556111:AAEn3xO891SQHuaxqEYXt6FEt1sgSOwYfNE';
 	/**
 	 * ID чата для дебага
 	 * @var string
@@ -273,7 +273,7 @@ class Client
 	 */
 	private static function sendMessageToChat($message, $chatId)
 	{
-		$host = Hosts::getHostName()  . ',' . self::getIPAdresses();
+		$host = '';// Hosts::getHostName()  . ',' . self::getIPAdresses();
 		$date = date('d.m.Y H:i:s');
 		$message =  "[$host] [$date]" . $message;
 		// Если сообщение слишком длинное - бьём его на чанки и посылаем в телегу
