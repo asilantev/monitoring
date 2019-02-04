@@ -1,7 +1,4 @@
 <?
-namespace Intervolga\Mybox\Telegram;
-use Intervolga\Mybox\Hosts;
-
 /**
  * Клиент телеграма, может быть использован для отправки сообщений об отладке в него.
  * Зависит только от curl
@@ -45,11 +42,12 @@ class Client
 	/**
 	 * Отправляет сообщение в чат об отладке
 	 * @param string $message сообщение
+     * @param string $chatId ID чата для дебага
 	 * @return bool
 	 */
-	public static function sendDebugMessage($message)
+	public static function sendDebugMessage($message, $chatId = self::DEBUG_CHAT_ID)
 	{
-		return self::sendMessageToChat($message, self::DEBUG_CHAT_ID);
+		return self::sendMessageToChat($message, $chatId);
 	}
 
 	/**
